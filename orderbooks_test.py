@@ -18,5 +18,23 @@ class TestLimit(unittest.TestCase):
     print(l)
 
 
+class TestPlaceLimitOrder(unittest.TestCase):
+
+  def test_place_limit_order(self):
+    ob = Orderbook()
+    sellOrder1 = Order(False, Decimal('5'))
+    buyOrder = Order(True, Decimal('7'))
+    sellOrder2 = Order(False, Decimal('6'))
+    sellOrder3 = Order(False, Decimal('2'))
+    ob.place_limit_order(Decimal('10000'), sellOrder1)
+    ob.place_limit_order(Decimal('8500'), buyOrder)
+    ob.place_limit_order(Decimal('7000'), sellOrder2)
+    ob.place_limit_order(Decimal('7000'), sellOrder3)
+
+    self.assertEqual(len(ob.bids), 1)
+    self.assertEqual(len(ob.asks), 2)
+    self.assertEqual(ob.askLimits[Decimal('7000')].totalVolume, Decimal('8'))
+
+
 if __name__ == 'main':
   unittest.main()
