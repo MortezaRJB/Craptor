@@ -45,5 +45,21 @@ class Orderbook:
     self.bids: List['Limit']                  = []
     self.askLimits: Dict[Decimal, 'Limit']    = {}
     self.bidLimits: Dict[Decimal, 'Limit']    = {}
-
+  
+  def place_limit_order(self, price: Decimal, order: Order):
+    if order.is_Bid:
+      limit = self.bidLimits.get(price, None)
+    else:
+      limit = self.askLimits.get(price, None)
+    
+    if not limit:
+      limit = Limit(price)
+      if order.is_Bid:
+        self.bids.append(limit)
+        self.bidLimits[price] = limit
+      else:
+        self.asks.append(limit)
+        self.askLimits[price] = limit
+    
+    limit.add_order(order)
 
