@@ -36,5 +36,24 @@ class TestPlaceLimitOrder(unittest.TestCase):
     self.assertEqual(ob.askLimits[Decimal('7000')].totalVolume, Decimal('8'))
 
 
+class TestPlaceMarketOrderSingleFill(unittest.TestCase):
+
+  def test_place_market_order(self):
+    ob = Orderbook()
+    sell_limit_order = Order(False, Decimal('10'))
+    ob.place_limit_order(Decimal('10000'), sell_limit_order)
+    buy_market_order = Order(True, Decimal('4'))
+    matches = ob.place_market_order(buy_market_order)
+
+    self.assertEqual(len(ob.asks), 1)
+    self.assertEqual(len(matches), 1)
+    self.assertEqual(ob.ask_total_volume(), Decimal('6'))
+    self.assertEqual(buy_market_order.is_filled, True)
+    self.assertEqual(matches[0].bid, buy_market_order)
+    self.assertEqual(matches[0].ask, sell_limit_order)
+    self.assertEqual(matches[0].size_filled, Decimal('4'))
+    self.assertEqual(matches[0].price, Decimal('10000'))
+
+
 if __name__ == 'main':
   unittest.main()
