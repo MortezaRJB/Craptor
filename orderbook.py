@@ -10,6 +10,18 @@ class Order:
     self.is_Bid           = is_Bid
     self.limit: Limit     = None
     self.timestamp        = datetime.now
+  
+  @property
+  def is_filled(self):
+    return self.size == 0
+
+
+class Match:
+  def __init__(self, bid: Order, ask: Order, size_filled: Decimal, price: Decimal) -> None:
+    self.bid            = bid
+    self.ask            = ask
+    self.size_filled    = size_filled
+    self.price          = price
 
 
 class Limit:
@@ -33,6 +45,36 @@ class Limit:
     if removed_order:
       removed_order.limit = None
       self.totalVolume -= removed_order.size
+  
+  def fill_order(self, existing_order: Order, new_order: Order):
+    size_filled = Decimal('0')
+    if existing_order.is_Bid:
+      bid = existing_order
+      ask = new_order
+    else:
+      bid = new_order
+      ask = existing_order
+    if existing_order.size >= new_order.size:
+      existing_order.size -= new_order.size
+      size_filled = new_order.size
+      new_order.size = Decimal('0')
+    else:
+      new_order.size -= existing_order.size
+      size_filled = existing_order.size
+      existing_order.size = Decimal('0')
+
+    return Match(bid, ask, size_filled, self.price)
+  
+  def fill(self, order: Order):
+    matches = []
+    for o in self.orders:
+      if order.is_filled:
+        break
+      matched = self.fill_order(o, order)
+      if matched:
+        matches.append(matched)
+        self.totalVolume -= matched.size_filled
+    return matches
   
   def __str__(self) -> str:
     return f"Limit: price[{self.price}], orders#[{len(self.orders)}], volume[{self.totalVolume}]"
@@ -62,4 +104,36 @@ class Orderbook:
         self.askLimits[price] = limit
     
     limit.add_order(order)
+
+  def bid_total_volume(self):
+    total_vol = Decimal('0')
+    for lim in self.bids:
+      total_vol += lim.totalVolume
+    return total_vol
+
+  def ask_total_volume(self):
+    total_vol = Decimal('0')
+    for lim in self.asks:
+      total_vol += lim.totalVolume
+    return total_vol
+
+  def place_market_order(self, order: Order):
+    matches = []
+    if order.is_Bid:
+      if order.size > self.ask_total_volume():
+        raise ValueError(f'Bid-Order Size Out of Range! total[{self.ask_total_volume}],  order-size[{order.size}]')
+      else:
+        for lim in self.asks:
+          limit_matches = lim.fill(order)
+          if limit_matches:
+            matches.extend(limit_matches)
+    else: #>> o.is_Ask
+      if order.size > self.bid_total_volume():
+        raise ValueError(f'Ask-Order Size Out of Range! total[{self.bid_total_volume}],  order-size[{order.size}]')
+      else:
+        for lim in self.bids:
+          limit_matches = lim.fill(order)
+          if limit_matches:
+            matches.extend(limit_matches)
+    return matches
 
