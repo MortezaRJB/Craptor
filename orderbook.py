@@ -22,6 +22,9 @@ class Match:
     self.ask            = ask
     self.size_filled    = size_filled
     self.price          = price
+  
+  def __str__(self) -> str:
+    return '{'+f"bid[{self.bid.size}], ask[{self.ask.size}], sizefilled[{self.size_filled}], price[{self.price}]"+'}'
 
 
 class Limit:

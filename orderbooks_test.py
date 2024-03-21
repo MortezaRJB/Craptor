@@ -36,9 +36,9 @@ class TestPlaceLimitOrder(unittest.TestCase):
     self.assertEqual(ob.askLimits[Decimal('7000')].totalVolume, Decimal('8'))
 
 
-class TestPlaceMarketOrderSingleFill(unittest.TestCase):
+class TestPlaceMarketOrder(unittest.TestCase):
 
-  def test_place_market_order(self):
+  def test_place_market_order_single_fill(self):
     ob = Orderbook()
     sell_limit_order = Order(False, Decimal('10'))
     ob.place_limit_order(Decimal('10000'), sell_limit_order)
@@ -53,6 +53,23 @@ class TestPlaceMarketOrderSingleFill(unittest.TestCase):
     self.assertEqual(matches[0].ask, sell_limit_order)
     self.assertEqual(matches[0].size_filled, Decimal('4'))
     self.assertEqual(matches[0].price, Decimal('10000'))
+  
+  def test_place_market_order_multi_fill(self):
+    ob = Orderbook()
+    buy_limit_order1 = Order(True, Decimal('4'))
+    buy_limit_order2 = Order(True, Decimal('5'))
+    buy_limit_order3 = Order(True, Decimal('15'))
+    ob.place_limit_order(Decimal('10000'), buy_limit_order1)
+    ob.place_limit_order(Decimal('9000'), buy_limit_order2)
+    ob.place_limit_order(Decimal('7000'), buy_limit_order3)
+
+    self.assertEqual(ob.bid_total_volume(), Decimal('24'))
+
+    sell_market_order = Order(False, Decimal('20.9'))
+    matches = ob.place_market_order(sell_market_order)
+
+    self.assertEqual(len(matches), 3)
+    print(f'\n==> Matches: ', [str(mtch) for mtch in matches])
 
 
 if __name__ == 'main':
