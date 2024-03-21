@@ -48,7 +48,7 @@ class TestPlaceMarketOrder(unittest.TestCase):
     self.assertEqual(len(ob.asks), 1)
     self.assertEqual(len(matches), 1)
     self.assertEqual(ob.ask_total_volume(), Decimal('6'))
-    self.assertEqual(buy_market_order.is_filled, True)
+    self.assertTrue(buy_market_order.is_filled)
     self.assertEqual(matches[0].bid, buy_market_order)
     self.assertEqual(matches[0].ask, sell_limit_order)
     self.assertEqual(matches[0].size_filled, Decimal('4'))
