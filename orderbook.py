@@ -171,4 +171,8 @@ class Orderbook:
             if len(lim.orders) == 0: self.clear_limit(True, lim)
     
     return matches
+  
+  def cancel_order(self, order: Order):
+    limit = order.limit
+    limit.delete_order(order)
 
