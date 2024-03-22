@@ -86,6 +86,9 @@ class Limit:
   
   def __le__(self, obj):
     return self.price < obj.price
+  
+  def __eq__(self, obj) -> bool:
+    return self.price == obj.price
 
 
 class Orderbook:
