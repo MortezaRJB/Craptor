@@ -45,10 +45,11 @@ class Limit:
     removed_order = None
     for index, o in enumerate(self.orders):
       if o == order:
-        removed_order = self.orders.pop(index)
+        removed_order = o
         break
     if removed_order:
       removed_order.limit = None
+      self.orders.pop(index)
       self.totalVolume -= removed_order.size
   
   def fill_order(self, existing_order: Order, new_order: Order):
