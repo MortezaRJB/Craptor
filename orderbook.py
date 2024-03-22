@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import List, Dict
 from datetime import datetime
+from functools import total_ordering
 
 
 class Order:
@@ -27,6 +28,7 @@ class Match:
     return '{'+f"bid[{self.bid.size}], ask[{self.ask.size}], sizefilled[{self.size_filled}], price[{self.price}]"+'}'
 
 
+@total_ordering
 class Limit:
 
   def __init__(self, price: Decimal) -> None:
@@ -81,6 +83,9 @@ class Limit:
   
   def __str__(self) -> str:
     return f"Limit: price[{self.price}], orders#[{len(self.orders)}], volume[{self.totalVolume}]"
+  
+  def __le__(self, obj):
+    return self.price < obj.price
 
 
 class Orderbook:
@@ -119,6 +124,12 @@ class Orderbook:
     for lim in self.asks:
       total_vol += lim.totalVolume
     return total_vol
+  
+  def sorted_asks(self) -> List['Limit']:
+    return sorted(self.asks, reverse=False)
+  
+  def sorted_bids(self) -> List['Limit']:
+    return sorted(self.bids, reverse=True)
 
   def place_market_order(self, order: Order):
     matches = []
@@ -126,7 +137,7 @@ class Orderbook:
       if order.size > self.ask_total_volume():
         raise ValueError(f'Bid-Order Size Out of Range! total[{self.ask_total_volume}],  order-size[{order.size}]')
       else:
-        for lim in self.asks:
+        for lim in self.sorted_asks():
           limit_matches = lim.fill(order)
           if limit_matches:
             matches.extend(limit_matches)
@@ -134,7 +145,7 @@ class Orderbook:
       if order.size > self.bid_total_volume():
         raise ValueError(f'Ask-Order Size Out of Range! total[{self.bid_total_volume}],  order-size[{order.size}]')
       else:
-        for lim in self.bids:
+        for lim in self.sorted_bids():
           limit_matches = lim.fill(order)
           if limit_matches:
             matches.extend(limit_matches)

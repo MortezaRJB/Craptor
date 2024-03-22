@@ -59,9 +59,9 @@ class TestPlaceMarketOrder(unittest.TestCase):
     buy_limit_order1 = Order(True, Decimal('4'))
     buy_limit_order2 = Order(True, Decimal('5'))
     buy_limit_order3 = Order(True, Decimal('15'))
-    ob.place_limit_order(Decimal('10000'), buy_limit_order1)
-    ob.place_limit_order(Decimal('9000'), buy_limit_order2)
-    ob.place_limit_order(Decimal('7000'), buy_limit_order3)
+    ob.place_limit_order(Decimal('9000'), buy_limit_order1)
+    ob.place_limit_order(Decimal('7000'), buy_limit_order2)
+    ob.place_limit_order(Decimal('10000'), buy_limit_order3)
 
     self.assertEqual(ob.bid_total_volume(), Decimal('24'))
 
@@ -69,7 +69,7 @@ class TestPlaceMarketOrder(unittest.TestCase):
     matches = ob.place_market_order(sell_market_order)
 
     self.assertEqual(len(matches), 3)
-    print(f'\n==> Matches: ', [str(mtch) for mtch in matches])
+    # print(f'\n==> Matches: ', [str(mtch) for mtch in matches])
 
 
 if __name__ == 'main':
