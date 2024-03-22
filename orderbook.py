@@ -72,13 +72,19 @@ class Limit:
   
   def fill(self, order: Order):
     matches = []
+    orders_to_delete = []
+
     for o in self.orders:
-      if order.is_filled:
-        break
+      if order.is_filled: break
       matched = self.fill_order(o, order)
       if matched:
         matches.append(matched)
         self.totalVolume -= matched.size_filled
+        if o.is_filled: orders_to_delete.append(o)
+    
+    for o in orders_to_delete:
+      self.delete_order(o)
+    
     return matches
   
   def __str__(self) -> str:
@@ -133,6 +139,14 @@ class Orderbook:
   
   def sorted_bids(self) -> List['Limit']:
     return sorted(self.bids, reverse=True)
+  
+  def clear_limit(self, is_bid_limit: bool, limit: Limit):
+    if is_bid_limit:
+      self.bidLimits.pop(limit.price)
+      self.bids.remove(limit)
+    else:
+      self.askLimits.pop(limit.price)
+      self.asks.remove(limit)
 
   def place_market_order(self, order: Order):
     matches = []
@@ -141,16 +155,20 @@ class Orderbook:
         raise ValueError(f'Bid-Order Size Out of Range! total[{self.ask_total_volume}],  order-size[{order.size}]')
       else:
         for lim in self.sorted_asks():
-          limit_matches = lim.fill(order)
-          if limit_matches:
-            matches.extend(limit_matches)
-    else: #>> o.is_Ask
+          there_were_matches = lim.fill(order)
+          if there_were_matches:
+            matches.extend(there_were_matches)
+            if len(lim.orders) == 0: self.clear_limit(False, lim)
+
+    else: #>> order.is_Ask
       if order.size > self.bid_total_volume():
         raise ValueError(f'Ask-Order Size Out of Range! total[{self.bid_total_volume}],  order-size[{order.size}]')
       else:
         for lim in self.sorted_bids():
-          limit_matches = lim.fill(order)
-          if limit_matches:
-            matches.extend(limit_matches)
+          there_were_matches = lim.fill(order)
+          if there_were_matches:
+            matches.extend(there_were_matches)
+            if len(lim.orders) == 0: self.clear_limit(True, lim)
+    
     return matches
 

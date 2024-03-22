@@ -68,8 +68,10 @@ class TestPlaceMarketOrder(unittest.TestCase):
     sell_market_order = Order(False, Decimal('20.9'))
     matches = ob.place_market_order(sell_market_order)
 
+    self.assertEqual(ob.bid_total_volume(), Decimal('3.1'))
     self.assertEqual(len(matches), 3)
     # print(f'\n==> Matches: ', [str(mtch) for mtch in matches])
+    self.assertEqual(len(ob.bids), 1)
 
 
 if __name__ == 'main':
