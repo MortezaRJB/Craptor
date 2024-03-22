@@ -16,6 +16,18 @@ class TestLimit(unittest.TestCase):
     l.delete_order(buy_order2)
     
     print(l)
+  
+  def test_cancel_order(self):
+    ob = Orderbook()
+    buyOrder1 = Order(True, Decimal('10'))
+    buyOrder2 = Order(True, Decimal('5'))
+    ob.place_limit_order(Decimal('8000'), buyOrder1)
+    ob.place_limit_order(Decimal('8000'), buyOrder2)
+    self.assertEqual(len(ob.bids), 1)
+    self.assertEqual(ob.bid_total_volume(), 15)
+    ob.cancel_order(buyOrder1)
+    self.assertEqual(len(ob.bids), 1)
+    self.assertEqual(ob.bid_total_volume(), 5)
 
 
 class TestPlaceLimitOrder(unittest.TestCase):
